@@ -67,3 +67,5 @@ sample/Makefile
 stamp-h1
 
 
+m4/
+sample/*.d

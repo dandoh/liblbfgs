@@ -445,6 +445,9 @@ int lbfgs(
         vec2norm(&gnorm, pg, n);
     }
     if (xnorm < 1.0) xnorm = 1.0;
+
+
+
     if (gnorm / xnorm <= param.epsilon) {
         ret = LBFGS_ALREADY_MINIMIZED;
         goto lbfgs_exit;
@@ -496,12 +499,25 @@ int lbfgs(
         }
 
         /*
-            Convergence test.
+
+            OLD: Convergence test.
             The criterion is given by the following formula:
                 |g(x)| / \max(1, |x|) < \epsilon
          */
         if (xnorm < 1.0) xnorm = 1.0;
-        if (gnorm / xnorm <= param.epsilon) {
+
+        /*
+            18/08/2019: Change convergence criterion to fabs(max_elems(g)) < param.epsilon
+         */
+
+        lbfgsfloatval_t mx_g = 0;
+        for (i = 0; i < n; i++) {
+            if (fabs(g[i]) > mx_g) {
+                mx_g = fabs(g[i]);
+            }
+        }
+
+        if (mx_g <= param.epsilon) {
             /* Convergence. */
             ret = LBFGS_SUCCESS;
             break;
