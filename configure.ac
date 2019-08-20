@@ -19,7 +19,7 @@ AC_CONFIG_MACRO_DIR([m4])
 dnl ------------------------------------------------------------------
 dnl Initialization for automake
 dnl ------------------------------------------------------------------
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS(config.h)
 AM_MAINTAINER_MODE
 
