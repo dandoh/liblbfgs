@@ -12,10 +12,19 @@ else
     FORCE_MISSING=
 fi
 
-glibtoolize --copy $FORCE 2>&1 | sed '/^You should/d' || {
-    echo "libtoolize failed!"
-    exit 1
-}
+if [ "" == "Darwin" ]; then
+    # MAC OS
+    glibtoolize --copy $FORCE 2>&1 | sed '/^You should/d' || {
+        echo "libtoolize failed!"
+        exit 1
+    }
+else
+    # Others
+    libtoolize --copy $FORCE 2>&1 | sed '/^You should/d' || {
+        echo "libtoolize failed!"
+        exit 1
+    }
+fi
 
 aclocal $FORCE || {
     echo "aclocal failed!"
