@@ -12,7 +12,7 @@ else
     FORCE_MISSING=
 fi
 
-if [ "" == "Darwin" ]; then
+if [ "$(uname)" == "Darwin" ]; then
     # MAC OS
     glibtoolize --copy $FORCE 2>&1 | sed '/^You should/d' || {
         echo "libtoolize failed!"
