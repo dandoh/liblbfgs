@@ -11,4 +11,4 @@
 - `./autogen.sh`
 - `./configure`
 - `make`
-- `make install`
+- `make install` (might need `sudo make install` because the header need to be copied to `usr/local/lib`
