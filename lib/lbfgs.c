@@ -111,7 +111,7 @@ struct tag_iteration_data {
 typedef struct tag_iteration_data iteration_data_t;
 
 static const lbfgs_parameter_t _defparam = {
-    6, 1e-5, 0, 1e-5,
+    6, LBFGS_CONVERGENCE_CRITERION_MAX_G, 1e-5, 0, 1e-5,
     0, LBFGS_LINESEARCH_DEFAULT, 40,
     1e-20, 1e20, 1e-4, 0.9, 0.9, 1.0e-16,
     0.0, 0, -1,
@@ -445,9 +445,6 @@ int lbfgs(
         vec2norm(&gnorm, pg, n);
     }
     if (xnorm < 1.0) xnorm = 1.0;
-
-
-
     if (gnorm / xnorm <= param.epsilon) {
         ret = LBFGS_ALREADY_MINIMIZED;
         goto lbfgs_exit;
@@ -499,28 +496,36 @@ int lbfgs(
         }
 
         /*
-
-            OLD: Convergence test.
-            The criterion is given by the following formula:
-                |g(x)| / \max(1, |x|) < \epsilon
+            Convergence test.
          */
-        if (xnorm < 1.0) xnorm = 1.0;
-
-        /*
-            18/08/2019: Change convergence criterion to fabs(max_elems(g)) < param.epsilon
-         */
-
-        lbfgsfloatval_t mx_g = 0;
-        for (i = 0; i < n; i++) {
-            if (fabs(g[i]) > mx_g) {
-                mx_g = fabs(g[i]);
+        if (param.convergence_criterion == LBFGS_CONVERGENCE_CRITERION_MAX_G) {
+            lbfgsfloatval_t mx_g = 0;
+            // TODO: Special version for fabs like vec2norm()
+            for (i = 0; i < n; i++) {
+                if (fabs(g[i]) > mx_g) {
+                    mx_g = fabs(g[i]);
+                }
             }
-        }
 
-        if (mx_g <= param.epsilon) {
-            /* Convergence. */
-            ret = LBFGS_SUCCESS;
-            break;
+            if (mx_g <= param.epsilon) {
+                /* Convergence. */
+                ret = LBFGS_SUCCESS;
+                break;
+            }
+
+        } else if (param.convergence_criterion == LBFGS_CONVERGENCE_CRITERION_NORM_G) {
+            if (gnorm <= param.epsilon) {
+                /* Convergence. */
+                ret = LBFGS_SUCCESS;
+                break;
+            }
+        } else if (param.convergence_criterion == LBFGS_CONVERGENCE_CRITERION_NORM_G_DIVIDE_NORM_X) {
+            if (xnorm < 1.0) xnorm = 1.0;
+            if (gnorm / xnorm <= param.epsilon) {
+                /* Convergence. */
+                ret = LBFGS_SUCCESS;
+                break;
+            }
         }
 
         /*

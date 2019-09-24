@@ -67,7 +67,7 @@ typedef double lbfgsfloatval_t;
  */
 
 /**
- * Return values of lbfgs().
+ * MARK: Return values of lbfgs().
  * 
  *  Roughly speaking, a negative value indicates an error.
  */
@@ -147,7 +147,7 @@ enum {
 };
 
 /**
- * Line search algorithms.
+ * MARK: Line search algorithms.
  */
 enum {
     /** The default algorithm (MoreThuente method). */
@@ -191,7 +191,30 @@ enum {
 };
 
 /**
- * L-BFGS optimization parameters.
+ * MARK: Convergence criterion option
+ *
+*/
+enum {
+    /**
+     * A minimization terminates when
+     *      max(abs(g_i)) < epsilon
+     */
+    LBFGS_CONVERGENCE_CRITERION_MAX_G = 0,
+    /**
+     * A minimization terminates when
+     *      ||g|| < epsilon
+     */
+    LBFGS_CONVERGENCE_CRITERION_NORM_G,
+    /**
+     * A minimization terminates when
+     *      ||g|| < \ref epsilon * max(1, ||x||),
+     *  where ||.|| denotes the Euclidean (L2) norm.
+     */
+    LBFGS_CONVERGENCE_CRITERION_NORM_G_DIVIDE_NORM_X
+};
+
+/**
+ * MARK: L-BFGS optimization parameters.
  *  Call lbfgs_parameter_init() function to initialize parameters to the
  *  default values.
  */
@@ -204,17 +227,19 @@ typedef struct {
      *  (corrections). The default value is \c 6. Values less than \c 3 are
      *  not recommended. Large values will result in excessive computing time.
      */
-    int             m;
+    int             m; // 6
 
+    /**
+     * The convergence criterion using
+     */
+    int             convergence_criterion;
     /**
      * Epsilon for convergence test.
      *  This parameter determines the accuracy with which the solution is to
-     *  be found. A minimization terminates when
-     *      ||g|| < \ref epsilon * max(1, ||x||),
-     *  where ||.|| denotes the Euclidean (L2) norm. The default value is
-     *  \c 1e-5.
+     *  be found.
+     * The default value is \c 1e-5.
      */
-    lbfgsfloatval_t epsilon;
+    lbfgsfloatval_t epsilon; // 1e-5
 
     /**
      * Distance for delta-based convergence test.
@@ -223,7 +248,7 @@ typedef struct {
      *  parameter is zero, the library does not perform the delta-based
      *  convergence test. The default value is \c 0.
      */
-    int             past;
+    int             past; // 0 (Shouldn't touch ?)
 
     /**
      * Delta for convergence test.
@@ -235,7 +260,7 @@ typedef struct {
      *  the objective value of the current iteration.
      *  The default value is \c 1e-5.
      */
-    lbfgsfloatval_t delta;
+    lbfgsfloatval_t delta; // 1e-5 (Shouldn't touch)
 
     /**
      * The maximum number of iterations.
@@ -245,21 +270,21 @@ typedef struct {
      *  optimization process until a convergence or error. The default value
      *  is \c 0.
      */
-    int             max_iterations;
+    int             max_iterations; // 0 (no bound)
 
     /**
      * The line search algorithm.
      *  This parameter specifies a line search algorithm to be used by the
      *  L-BFGS routine.
      */
-    int             linesearch;
+    int             linesearch; // 0 (LBFGS_LINESEARCH_DEFAULT)
 
     /**
      * The maximum number of trials for the line search.
      *  This parameter controls the number of function and gradients evaluations
      *  per iteration for the line search routine. The default value is \c 40.
      */
-    int             max_linesearch;
+    int             max_linesearch; // 40
 
     /**
      * The minimum step of the line search routine.
@@ -268,7 +293,7 @@ typedef struct {
      *  problem is extremely badly scaled (in which case the exponents should
      *  be increased).
      */
-    lbfgsfloatval_t min_step;
+    lbfgsfloatval_t min_step; // 1e-20 (Shouldn't touch)
 
     /**
      * The maximum step of the line search.
@@ -277,14 +302,14 @@ typedef struct {
      *  problem is extremely badly scaled (in which case the exponents should
      *  be increased).
      */
-    lbfgsfloatval_t max_step;
+    lbfgsfloatval_t max_step; // 1e20 (Shouldn't touch)
 
     /**
      * A parameter to control the accuracy of the line search routine.
      *  The default value is \c 1e-4. This parameter should be greater
      *  than zero and smaller than \c 0.5.
      */
-    lbfgsfloatval_t ftol;
+    lbfgsfloatval_t ftol; // 1e-4
 
     /**
      * A coefficient for the Wolfe condition.
@@ -295,7 +320,7 @@ typedef struct {
      *  The default value is \c 0.9. This parameter should be greater
      *  the \ref ftol parameter and smaller than \c 1.0.
      */
-    lbfgsfloatval_t wolfe;
+    lbfgsfloatval_t wolfe; // 0.9
 
     /**
      * A parameter to control the accuracy of the line search routine.
@@ -307,7 +332,7 @@ typedef struct {
      *  greater than the \ref ftol parameter (\c 1e-4) and smaller than
      *  \c 1.0.
      */
-    lbfgsfloatval_t gtol;
+    lbfgsfloatval_t gtol; // 0.9
 
     /**
      * The machine precision for floating-point values.
@@ -316,7 +341,7 @@ typedef struct {
      *  with the status code (::LBFGSERR_ROUNDING_ERROR) if the relative width
      *  of the interval of uncertainty is less than this parameter.
      */
-    lbfgsfloatval_t xtol;
+    lbfgsfloatval_t xtol; // 1e-16 (Shouldn't touch)
 
     /**
      * Coeefficient for the L1 norm of variables.
@@ -331,7 +356,7 @@ typedef struct {
      *  the function value F(x) and gradients G(x) as usual. The default value
      *  is zero.
      */
-    lbfgsfloatval_t orthantwise_c;
+    lbfgsfloatval_t orthantwise_c; // 0 (Shouldn't touch)
 
     /**
      * Start index for computing L1 norm of the variables.
@@ -345,7 +370,7 @@ typedef struct {
      *  variables, x_1, ..., x_{b-1} (e.g., a bias term of logistic
      *  regression) from being regularized. The default value is zero.
      */
-    int             orthantwise_start;
+    int             orthantwise_start; // 0 (Shouldn't touch)
 
     /**
      * End index for computing L1 norm of the variables.
@@ -354,12 +379,12 @@ typedef struct {
      *  specifies the index number at which the library stops computing the
      *  L1 norm of the variables x,
      */
-    int             orthantwise_end;
+    int             orthantwise_end; // 0 (Shouldn't touch)
 } lbfgs_parameter_t;
 
 
 /**
- * Callback interface to provide objective function and gradient evaluations.
+ * MARK: Callback interface to provide objective function and gradient evaluations.
  *
  *  The lbfgs() function call this function to obtain the values of objective
  *  function and its gradients when needed. A client program must implement
@@ -384,7 +409,7 @@ typedef lbfgsfloatval_t (*lbfgs_evaluate_t)(
     );
 
 /**
- * Callback interface to receive the progress of the optimization process.
+ * MARK: Callback interface to receive the progress of the optimization process.
  *
  *  The lbfgs() function call this function for each iteration. Implementing
  *  this function, a client program can store or display the current progress
